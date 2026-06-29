@@ -30,12 +30,14 @@ struct Statistics
     int    customersWhoWaited = 0;
 
     double utilization       = 0.0;
+
+    double totalIdleTime     = 0.0;  // simulationTime - totalService
+    double queueLength       = 0.0;  // Lq: time-weighted average number waiting in line
 };
 
 class Simulation
 {
 public:
-    // numCustomers must be >= 1; the caller validates this beforehand.
     static void run(
         int numCustomers,
         std::vector<Customer>& customers,

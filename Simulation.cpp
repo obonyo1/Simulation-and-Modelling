@@ -3,6 +3,16 @@
 #include <random>
 #include <algorithm>
 
+namespace
+{
+    // A customer joins the queue at arrival and leaves the queue the moment their service starts, whether or not they had to wait at all.
+    struct QueueEvent
+    {
+        double time;
+        int    delta; // +1 = joined queue, -1 = left queue
+    };
+}
+
 void Simulation::run(
         int numCustomers,
         std::vector<Customer>& customers,
@@ -11,8 +21,6 @@ void Simulation::run(
     customers.clear();
     stats = Statistics();
 
-    // Guards the divide-by-zero / empty-vector crash from indexing
-    // customers.back() when numCustomers is 0 or negative.
     if (numCustomers < 1)
         return;
 
@@ -82,4 +90,33 @@ void Simulation::run(
     stats.customersWhoWaited = waited;
 
     stats.utilization = (totalService / simulationTime) * 100.0;
+    stats.totalIdleTime = simulationTime - totalService;
+
+    //Lq: time-weighted average number of customers
+
+    // Each customer occupies the queue for [arrival, serviceStart]. Then integrate across the whole timeline.
+    std::vector<QueueEvent> events;
+    events.reserve(customers.size() * 2);
+
+    for (const Customer& c : customers)
+    {
+        events.push_back({c.arrival, +1});
+        events.push_back({c.serviceStart, -1});
+    }
+
+    std::sort(events.begin(), events.end(),
+              [](const QueueEvent& a, const QueueEvent& b) { return a.time < b.time; });
+
+    double area = 0.0;
+    int currentInQueue = 0;
+    double prevTime = events.empty() ? 0.0 : events.front().time;
+
+    for (const QueueEvent& e : events)
+    {
+        area += static_cast<double>(currentInQueue) * (e.time - prevTime);
+        currentInQueue += e.delta;
+        prevTime = e.time;
+    }
+
+    stats.queueLength = area / simulationTime;
 }
