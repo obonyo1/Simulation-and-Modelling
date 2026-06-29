@@ -3,12 +3,12 @@ QT += widgets
 CONFIG += c++17
 
 SOURCES += \
-    main.cpp \
-    InputWindow.cpp \
-    OutputWindow.cpp \
-    Simulation.cpp
+    src/main.cpp \
+    src/InputWindow.cpp \
+    src/OutputWindow.cpp \
+    src/Simulation.cpp
 
 HEADERS += \
-    InputWindow.h \
-    OutputWindow.h \
-    Simulation.h
+    src/InputWindow.h \
+    src/OutputWindow.h \
+    src/Simulation.h
